@@ -1,0 +1,3 @@
+[submodule "ai-sdk-cpp"]
+	path = ai-sdk-cpp
+	url = git@github.com:nimit/ai-sdk-cpp.git
