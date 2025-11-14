@@ -1,5 +1,5 @@
 CREATE FUNCTION pg_gen_query(query text)
-RETURNS SETOF record
+RETURNS TEXT
 AS 'MODULE_PATHNAME', 'pg_gen_query'
 LANGUAGE C STRICT VOLATILE;
 
@@ -22,3 +22,5 @@ $$;
 CREATE EVENT TRIGGER pg_gen_query_schema_trigger
 ON ddl_command_end
 EXECUTE FUNCTION regen_schema_cache_trigger();
+
+SELECT regen_schema_cache();

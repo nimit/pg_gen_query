@@ -10,22 +10,27 @@ extern "C"
 
 #include <fstream>
 #include <string>
+#include "constants.h"
 
-static const char *SCHEMA_PATH = "/var/lib/postgresql/pg_gen_query_schema.json";
-
-static std::string get_schema_json()
+static std::string create_schema_json()
 {
   const char *query =
       "SELECT table_schema, table_name, column_name, data_type "
       "FROM information_schema.columns "
+      "WHERE table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast') "
+      "  AND table_schema NOT LIKE 'pg_%' "
       "ORDER BY table_schema, table_name, ordinal_position";
 
   if (SPI_connect() != SPI_OK_CONNECT)
+  {
     elog(ERROR, "SPI_connect failed");
+  }
 
   int ret = SPI_execute(query, true, 0);
   if (ret != SPI_OK_SELECT)
+  {
     elog(ERROR, "SPI_execute failed");
+  }
 
   std::string result = "{ \"tables\": [";
   bool first_table = true;
@@ -90,11 +95,13 @@ extern "C"
   PG_FUNCTION_INFO_V1(regen_schema_cache);
   Datum regen_schema_cache(PG_FUNCTION_ARGS)
   {
-    std::string json = get_schema_json();
+    std::string json = create_schema_json();
 
     std::ofstream f(SCHEMA_PATH, std::ios::out | std::ios::trunc);
     if (!f.is_open())
+    {
       elog(ERROR, "Unable to write schema cache file: %s", SCHEMA_PATH);
+    }
 
     f << json;
     f.close();

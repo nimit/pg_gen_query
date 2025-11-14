@@ -1,0 +1,1 @@
+static const char *SCHEMA_PATH = "/var/lib/postgresql/pg_gen_query_schema.json";

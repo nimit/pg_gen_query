@@ -27,42 +27,42 @@ extern "C"
     {
       PG_RETURN_NULL();
     }
-    ReturnSetInfo *rsinfo = (ReturnSetInfo *)fcinfo->resultinfo;
-    if (rsinfo == nullptr || !IsA(rsinfo, ReturnSetInfo))
-    {
-      ereport(ERROR, (errmsg("set-valued function called in context that cannot accept a set")));
-    }
-
-    rsinfo->returnMode = SFRM_Materialize;
-    rsinfo->setDesc = nullptr;
-    Tuplestorestate *tupstore = tuplestore_begin_heap(true, false, 1024);
-    rsinfo->setResult = tupstore;
+    // ReturnSetInfo *rsinfo = (ReturnSetInfo *)fcinfo->resultinfo;
+    // if (rsinfo == nullptr || !IsA(rsinfo, ReturnSetInfo))
+    // {
+    //   ereport(ERROR, (errmsg("set-valued function called in context that cannot accept a set")));
+    // }
+    // rsinfo->returnMode = SFRM_Materialize;
+    // rsinfo->setDesc = nullptr;
+    // Tuplestorestate *tupstore = tuplestore_begin_heap(true, false, 1024);
+    // rsinfo->setResult = tupstore;
     try
     {
       text *input_text = PG_GETARG_TEXT_PP(0);
       std::string input(VARDATA_ANY(input_text), VARSIZE_ANY_EXHDR(input_text));
       std::string sql_query = generate_sql(input);
-      if (SPI_connect() != SPI_OK_CONNECT)
-      {
-        elog(ERROR, "SPI_connect failed");
-      }
-      auto ret = SPI_execute(sql_query.c_str(), true, 0);
-      if (ret != SPI_OK_SELECT && ret != SPI_OK_INSERT && ret != SPI_OK_UPDATE)
-      {
-        elog(WARNING, "SPI_execute returned unexpected code: %d", ret);
-      }
+      PG_RETURN_TEXT_P(cstring_to_text(sql_query.c_str()));
+      // if (SPI_connect() != SPI_OK_CONNECT)
+      // {
+      //   elog(ERROR, "SPI_connect failed");
+      // }
+      // auto ret = SPI_execute(sql_query.c_str(), true, 0);
+      // if (ret != SPI_OK_SELECT && ret != SPI_OK_INSERT && ret != SPI_OK_UPDATE)
+      // {
+      //   elog(WARNING, "SPI_execute returned unexpected code: %d", ret);
+      // }
 
-      SPITupleTable *tuptable = SPI_tuptable;
-      TupleDesc tupdesc = tuptable->tupdesc;
-      rsinfo->setDesc = CreateTupleDescCopy(tupdesc);
+      // SPITupleTable *tuptable = SPI_tuptable;
+      // TupleDesc tupdesc = tuptable->tupdesc;
+      // rsinfo->setDesc = CreateTupleDescCopy(tupdesc);
 
-      for (uint64 i = 0; i < SPI_processed; i++)
-      {
-        tuplestore_puttuple(tupstore, tuptable->vals[i]);
-      }
+      // for (uint64 i = 0; i < SPI_processed; i++)
+      // {
+      //   tuplestore_puttuple(tupstore, tuptable->vals[i]);
+      // }
 
-      SPI_finish();
-      tuplestore_donestoring(tupstore);
+      // SPI_finish();
+      // tuplestore_donestoring(tupstore);
       return (Datum)0;
     }
     catch (const std::exception &e)
