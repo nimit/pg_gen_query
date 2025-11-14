@@ -3,9 +3,9 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 
 EXTENSION = pg_gen_query
 MODULE_big = pg_gen_query
-OBJS = pg_gen_query.o
+OBJS = pg_gen_query.o generate_sql.o regen_schema.o
 
-DATA = pg_gen_query--1.0.sql
+DATA = sql/pg_gen_query--1.0.sql
 
 CXX = g++
 CXXFLAGS = -std=c++17 -fPIC -O2
@@ -21,6 +21,10 @@ SHLIB_LINK = \
   $(AI_SDK_BUILD_DIR)/libai-sdk-cpp-anthropic.a \
   $(AI_SDK_BUILD_DIR)/libai-sdk-cpp-core.a \
   $(AI_SDK_BUILD_DIR)/libai-sdk-cpp-openai.a \
+  $(AI_SDK_BUILD_DIR)/third_party/brotli-cmake/brotli/libbrotlicommon.a \
+  $(AI_SDK_BUILD_DIR)/third_party/brotli-cmake/brotli/libbrotlienc.a \
+  $(AI_SDK_BUILD_DIR)/third_party/brotli-cmake/brotli/libbrotlidec.a \
+  $(AI_SDK_BUILD_DIR)/third_party/zlib-cmake/zlib/libz.a \
   -lstdc++
 
 %.o: %.cpp
