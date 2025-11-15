@@ -12,6 +12,9 @@ extern "C"
 #include <ai/anthropic.h>
 #include "constants.h"
 
+extern char *ai_openai_api_key;
+extern char *ai_anthropic_api_key;
+
 static std::string get_schema()
 {
   std::ifstream f(SCHEMA_PATH);
@@ -38,18 +41,23 @@ std::string generate_sql(const std::string &query)
 
     elog(INFO, "FULL PROMPT: %s", full_prompt.c_str());
 
-    const char *openai = getenv("OPENAI_API_KEY");
-    const char *anthropic = getenv("ANTHROPIC_API_KEY");
+    const char *openai = (ai_openai_api_key && ai_openai_api_key[0])
+                             ? ai_openai_api_key
+                             : getenv("OPENAI_API_KEY");
+
+    const char *anthropic = (ai_anthropic_api_key && ai_anthropic_api_key[0])
+                                ? ai_anthropic_api_key
+                                : getenv("ANTHROPIC_API_KEY");
     ai::Client client;
     ai::GenerateOptions options;
     if (openai)
     {
-      client = ai::openai::create_client();
-      options.model = ai::openai::models::kChatGpt4oLatest;
+      client = ai::openai::create_client(openai);
+      options.model = "gpt-5-nano-2025-08-07";
     }
     else if (anthropic)
     {
-      client = ai::anthropic::create_client();
+      client = ai::anthropic::create_client(anthropic);
       options.model = ai::anthropic::models::kClaudeSonnet45;
     }
     else
@@ -57,8 +65,15 @@ std::string generate_sql(const std::string &query)
       elog(ERROR, "No LLM provider API key is found. Restart postgres service with either OPENAI_API_KEY OR ANTHROPIC_API_KEY set");
     }
 
+    options.prompt = full_prompt;
     auto response = client.generate_text(options);
-    return response.text;
+    // elog(INFO, "response finish: %s", response.finishReasonToString().c_str());
+    if (response.is_success())
+    {
+      return response.text;
+    }
+
+    elog(ERROR, "AI Error: %s", response.error_message().c_str());
 
     // dummy
     // std::string sql_query = "SELECT * FROM demo.products WHERE price > 20;";

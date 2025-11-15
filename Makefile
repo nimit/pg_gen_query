@@ -3,7 +3,7 @@ PGXS := $(shell $(PG_CONFIG) --pgxs)
 
 EXTENSION = pg_gen_query
 MODULE_big = pg_gen_query
-OBJS = pg_gen_query.o generate_sql.o regen_schema.o
+OBJS = pg_gen_query.o guc.o generate_sql.o regen_schema.o
 
 DATA = sql/pg_gen_query--1.0.sql
 
