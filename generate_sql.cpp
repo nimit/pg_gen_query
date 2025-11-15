@@ -4,6 +4,7 @@ extern "C"
 #include "utils/elog.h"
 }
 
+#include <chrono>
 #include <fstream>
 #include <string>
 #include <stdexcept>
@@ -11,25 +12,32 @@ extern "C"
 #include <ai/openai.h>
 #include <ai/anthropic.h>
 #include "constants.h"
+#include "schema_cache.h"
 
 extern char *ai_openai_api_key;
 extern char *ai_anthropic_api_key;
 
 static std::string get_schema()
 {
+  if (!schema_cache.empty())
+  {
+    elog(INFO, "Using cached schema...");
+    return schema_cache;
+  }
   std::ifstream f(SCHEMA_PATH);
   if (!f.good())
   {
     return "";
   }
-  return std::string((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+  schema_cache = std::string((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+  return schema_cache;
 }
 
 std::string generate_sql(const std::string &query)
 {
   try
   {
-    get_schema();
+    // auto start = std::chrono::steady_clock::now();
     std::string full_prompt =
         "You are an expert SQL generator."
         "Given a database schema and a natural language query, "
@@ -38,8 +46,14 @@ std::string generate_sql(const std::string &query)
         get_schema() +
         "`\nQuery: " +
         query;
+    // auto end = std::chrono::steady_clock::now();
+    // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    // duration = 0ms (maybe because of compiler optimization? but ai call will always be high)
+    // elog(INFO, "FULL PROMPT (took %ld ms): %s", duration, full_prompt.c_str());
 
-    elog(INFO, "FULL PROMPT: %s", full_prompt.c_str());
+    // dummy
+    std::string sql_query = "SELECT * FROM demo.products WHERE price > 20;";
+    return sql_query;
 
     const char *openai = (ai_openai_api_key && ai_openai_api_key[0])
                              ? ai_openai_api_key
@@ -74,11 +88,6 @@ std::string generate_sql(const std::string &query)
     }
 
     elog(ERROR, "AI Error: %s", response.error_message().c_str());
-
-    // dummy
-    // std::string sql_query = "SELECT * FROM demo.products WHERE price > 20;";
-    // elog(INFO, "GENERTED SQL QUERY: %s", sql_query.c_str());
-    // return sql_query;
   }
   catch (const std::exception &e)
   {

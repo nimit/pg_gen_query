@@ -11,9 +11,11 @@ extern "C"
 #include <fstream>
 #include <string>
 #include "constants.h"
+#include "schema_cache.h"
 
 static std::string create_schema_json()
 {
+  elog(INFO, "Creating schema...");
   const char *query =
       "SELECT table_schema, table_name, column_name, data_type "
       "FROM information_schema.columns "
@@ -96,17 +98,18 @@ extern "C"
   Datum regen_schema_cache(PG_FUNCTION_ARGS)
   {
     std::string json = create_schema_json();
-
     std::ofstream f(SCHEMA_PATH, std::ios::out | std::ios::trunc);
     if (!f.is_open())
     {
       elog(ERROR, "Unable to write schema cache file: %s", SCHEMA_PATH);
     }
 
+    schema_cache.clear();
+
     f << json;
     f.close();
 
-    elog(LOG, "Schema cache refreshed: %s", SCHEMA_PATH);
+    elog(INFO, "Schema file refreshed: %s", SCHEMA_PATH);
     PG_RETURN_VOID();
   }
 }
