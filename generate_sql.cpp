@@ -21,7 +21,7 @@ static std::string get_schema()
 {
   if (!schema_cache.empty())
   {
-    elog(INFO, "Using cached schema...");
+    elog(INFO, "Using memcached schema...");
     return schema_cache;
   }
   std::ifstream f(SCHEMA_PATH);
@@ -39,9 +39,10 @@ std::string generate_sql(const std::string &query)
   {
     // auto start = std::chrono::steady_clock::now();
     std::string full_prompt =
-        "You are an expert SQL generator."
+        "You are an expert SQL generator. "
         "Given a database schema and a natural language query, "
-        "return ONLY an SQL query satisying ALL the conditions.\n"
+        "return ONLY an SQL query satisying ALL the conditions. "
+        "If not mentioned in the schema, assume a column is not the primary key, not unique, nullable, and has no checks.\n"
         "Schema: `" +
         get_schema() +
         "`\nQuery: " +
