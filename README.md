@@ -2,9 +2,8 @@
 
 This PostgreSQL extension provides a function, `pg_gen_query`, that converts natural language input into an equivalent SQL command.
 
-### Demo Video
+![pg_gen_query_gif](https://github.com/user-attachments/assets/1e2dd00a-a679-467c-8ed4-11e99012e2b6)
 
-<iframe width="1044" height="566" src="https://www.youtube.com/embed/9UCD6Y_91Kc" title="pg_gen_query: Query PostgreSQL in Natural Language" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## Installation & Setup
 
