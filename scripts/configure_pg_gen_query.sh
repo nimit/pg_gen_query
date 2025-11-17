@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
-
 echo "=== pg_gen_query configuration helper ==="
 
 ########################################

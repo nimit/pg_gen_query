@@ -65,7 +65,7 @@ static uint64 run_select_or_throw(const char *query)
 */
 static std::string create_detailed_schema_json()
 {
-  elog(INFO, "Creating detailed schema cache...");
+  elog(LOG, "Creating detailed schema cache...");
 
   if (SPI_connect() != SPI_OK_CONNECT)
   {
@@ -476,7 +476,7 @@ static std::string create_detailed_schema_json()
 
   SPI_finish();
   std::string s = out.dump();
-  elog(DEBUG1, "Detailed schema JSON length=%zu", s.size());
+  elog(LOG, "Detailed schema JSON length=%zu", s.size());
   return s;
 }
 
@@ -487,7 +487,7 @@ static std::string create_detailed_schema_json()
 */
 static std::string create_flat_schema_json()
 {
-  elog(INFO, "Creating flat schema cache...");
+  elog(LOG, "Creating flat schema cache...");
 
   std::string detailed = create_detailed_schema_json();
   json det = json::parse(detailed);
@@ -616,7 +616,7 @@ extern "C"
     f << json;
     f.close();
 
-    elog(INFO, "Schema file refreshed: %s", SCHEMA_PATH);
+    elog(LOG, "Schema file refreshed: %s", SCHEMA_PATH);
     PG_RETURN_VOID();
   }
 }

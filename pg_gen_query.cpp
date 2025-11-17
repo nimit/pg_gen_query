@@ -17,6 +17,8 @@ extern "C"
 #include <exception>
 #include "generate_sql.h"
 
+// TODO: Add support to return records (maybe in a separate function?)
+// TODO: Add support for multiple queries
 extern "C"
 {
   PG_FUNCTION_INFO_V1(pg_gen_query);
@@ -40,6 +42,7 @@ extern "C"
     {
       text *input_text = PG_GETARG_TEXT_PP(0);
       std::string input(VARDATA_ANY(input_text), VARSIZE_ANY_EXHDR(input_text));
+      // std::string sql_query = "no-op";
       std::string sql_query = generate_sql(input);
       PG_RETURN_TEXT_P(cstring_to_text(sql_query.c_str()));
       // if (SPI_connect() != SPI_OK_CONNECT)

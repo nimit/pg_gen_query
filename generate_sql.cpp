@@ -21,7 +21,7 @@ static std::string get_schema()
 {
   if (!schema_cache.empty())
   {
-    elog(INFO, "Using memcached schema...");
+    elog(LOG, "Using memcached schema...");
     return schema_cache;
   }
   std::ifstream f(SCHEMA_PATH);
@@ -50,11 +50,7 @@ std::string generate_sql(const std::string &query)
     // auto end = std::chrono::steady_clock::now();
     // auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     // duration = 0ms (maybe because of compiler optimization? but ai call will always be high)
-    // elog(INFO, "FULL PROMPT (took %ld ms): %s", duration, full_prompt.c_str());
-
-    // dummy
-    std::string sql_query = "SELECT * FROM demo.products WHERE price > 20;";
-    return sql_query;
+    // elog(LOG, "FULL PROMPT (took %ld ms): %s", duration, full_prompt.c_str());
 
     const char *openai = (ai_openai_api_key && ai_openai_api_key[0])
                              ? ai_openai_api_key
@@ -82,7 +78,7 @@ std::string generate_sql(const std::string &query)
 
     options.prompt = full_prompt;
     auto response = client.generate_text(options);
-    // elog(INFO, "response finish: %s", response.finishReasonToString().c_str());
+    // elog(LOG, "response finish: %s", response.finishReasonToString().c_str());
     if (response.is_success())
     {
       return response.text;
