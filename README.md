@@ -68,7 +68,10 @@ Tests are organized into folders within the `tests` directory. Each folder conta
 
 ## Roadmap
 
-1. Return actual query results instead of SQL strings. Because PostgreSQL requires `SETOF RECORD`, this would require the user to write: `SELECT * FROM pg_gen_query(query) AS (col1, col2);`.
-2. Add support for processing multiple queries at once. Since most time is spent on network calls, batching could significantly improve performance.
-3. Reduce schema size. Although human-readable now, the schema could be compacted using abbreviations and LLM-friendly encodings.
-4. Investigate using PostgreSQL Dynamic Shared Memory to improve schema cache performance. Currently, schema data is cached per active connection; DSM may allow faster, lock-free reads.
+1. Add support for users to switch to using the more detailed schema as context.
+2. Return actual query results instead of SQL strings. Because PostgreSQL requires `SETOF RECORD`, this would require the user to write: `SELECT * FROM pg_gen_query(query) AS (col1, col2);`.
+3. Add support for processing multiple queries at once. Since most time is spent on network calls, batching could significantly improve performance.
+4. Reduce schema size. Although human-readable now, the schema could be compacted using abbreviations and LLM-friendly encodings.
+5. Investigate using PostgreSQL Dynamic Shared Memory to improve schema cache performance. Currently, schema data is cached per active connection; DSM may allow faster, lock-free reads.
+
+> Note: AI tools were used in generating code/documentation for this extension.
