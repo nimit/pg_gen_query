@@ -4,6 +4,12 @@ This PostgreSQL extension provides a function, `pg_gen_query`, that converts nat
 
 ![pg_gen_query_gif](https://github.com/user-attachments/assets/1e2dd00a-a679-467c-8ed4-11e99012e2b6)
 
+## Features
+
+- Generates SQL commands directly from natural language queries.
+- Caches the database schema to preserve performance for other queries (no transactions are opened during `pg_gen_query`).
+- Provides a complete schema view (including constraints and indexes) as context for more accurate and efficient SQL generation.
+- Automatically detects schema changes and rebuilds the cache accordingly.
 
 ## Installation & Setup
 
@@ -58,6 +64,7 @@ Tests are organized into folders within the `tests` directory. Each folder conta
 
 - **01_concurrency**
   Runs multiple queries in parallel to benchmark schema cache performance on a populated database.
+
   **⚠️ Warning:** This test may consume a large number of AI credits due to many backend calls. To measure extension performance alone, disable AI SDK calls before running.
 
 - **02_simple**
