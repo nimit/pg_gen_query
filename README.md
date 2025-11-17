@@ -1,67 +1,74 @@
-# pg_gen_query
+# pg_gen_query: Query PostgreSQL with Natural Language
 
-This Postgres extension provides a function `pg_gen_query` that takes a natural language query and returns the SQL command that would generate the same result.
+This PostgreSQL extension provides a function, `pg_gen_query`, that converts natural language input into an equivalent SQL command.
 
-## Using the extension
+## Installation & Setup
 
-#### One-time Setup
+### One-Time Setup
 
-Clone the repository along with the submodules.
+Clone the repository along with its submodules:
 
 ```bash
 git clone --recurse-submodules https://github.com/nimit/pg_gen_query.git
 ```
 
-Copy the `.env.template` file to `.env` and fill in the appropriate values.
-Call the `configure_pg_gen_query.sh` script add an environent variable to the PostgreSQL config (this is required for the extension to work on Ubuntu as the Postgres worker is run ).
+Copy `.env.template` to `.env` and fill in the required values.
+
+Run the configuration script to add an environment variable to the PostgreSQL config (needed on Ubuntu where the Postgres worker is run separately):
 
 ```bash
 bash scripts/configure_pg_gen_query.sh
 ```
 
-A convenience script to build and install the extension is provided at the root of the repositiory.
+A convenience script for building and installing the extension is provided at the repository root:
 
 ```bash
 ./build.sh
 ```
 
-Run this command to create an extension on the database.
+Finally, create the extension inside your database:
 
 ```sql
 CREATE EXTENSION pg_gen_query;
 ```
 
-#### Usage
+## Usage
 
-The extension provides a function `pg_gen_query` that takes a natural language query and returns the SQL command. Under the hood, it will call Clickhouse's AI SDK with the query and a cached version of the schema to generate a SQL command.
+`pg_gen_query` accepts a natural language query and returns the SQL command that would produce the requested result. Internally, it uses ClickHouse's AI SDK along with a cached version of the database schema.
 
-Example:
+### Example
 
 ```sql
 SELECT * FROM pg_gen_query("show me all products where price is greater than 20");
 ```
 
-The extension is currently limited to a single query at a time.
-Note:
-The extension currently only returns a SQL command instead of actual data because due to Postgres' restrictions, when returning type `SETOF RECORD`, the user needs to specify column keys.
+### Notes
+
+- The extension currently supports only a single query at a time.
+- It returns **only the generated SQL command**, not the actual data. PostgreSQL restrictions require queries returning `SETOF RECORD` to explicitly specify column keys, which prevents seamless data-returning behavior.
 
 ## Tests
 
-There are a few tests segregated in folders in the `tests` directory.
-Each folder contains a `run.sh` script that is by itself, sufficient to run the tests.
+Tests are organized into folders within the `tests` directory. Each folder contains a standalone `run.sh` script.
 
-01_concurrency: This test is a simple concurrency test that runs multiple queries in parallel (mainly used to test and benchmark the schema cache's performance on a populated database).
-**DANGER: Running this test may use an inordinate amount of credits because it makes many calls to the extension (and therefore the AI backend).** To just measure the performace of the extension, disable calls to the AI SDK before running the test.
+### Test Suites
 
-02_simple: Runs a few simple queries against a small database.
+- **01_concurrency**
+  Runs multiple queries in parallel to benchmark schema cache performance on a populated database.
+  **⚠️ Warning:** This test may consume a large number of AI credits due to many backend calls. To measure extension performance alone, disable AI SDK calls before running.
 
-03_complex: Runs a few complex queries against a larger, more complex database.
+- **02_simple**
+  Executes simple queries against a small database.
 
-04_reload_schema_on_change: Tests the extension's ability to automatically invalidate and regenerate the schema cache when the database schema changes.
+- **03_complex**
+  Runs more complex queries on a larger and more intricate database.
+
+- **04_reload_schema_on_change**
+  Ensures the extension correctly invalidates and regenerates the schema cache when the underlying database schema changes.
 
 ## Roadmap
 
-1. Return actual records instead of the SQL command (Postgres required the queries to be modeled as `SETOF RECORD` to work with the extension which would then require the function to be called as `SELECT * FROM pg_gen_query(query) AS col1, col2;`).
-2. Add support for multiple queries. Since the processing time is dominated by the network call, batching multiple queries would be beneficial.
-3. The schema is human-readable right now. But, since it is used as context to an LLM, its size can be reduced by using abbreviations and other techniques that the LLM can recognize.
-4. Test if schema cache can be improved using Postgres' Dynamic Shared Memory & lockless reads. Currently, the schema is read and cached for each active connection inside the extension. I suspect using PG's DSM might be more effective.
+1. Return actual query results instead of SQL strings. Because PostgreSQL requires `SETOF RECORD`, this would require the user to write: `SELECT * FROM pg_gen_query(query) AS (col1, col2);`.
+2. Add support for processing multiple queries at once. Since most time is spent on network calls, batching could significantly improve performance.
+3. Reduce schema size. Although human-readable now, the schema could be compacted using abbreviations and LLM-friendly encodings.
+4. Investigate using PostgreSQL Dynamic Shared Memory to improve schema cache performance. Currently, schema data is cached per active connection; DSM may allow faster, lock-free reads.
