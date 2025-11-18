@@ -1,4 +1,4 @@
-# pg_gen_query: Query PostgreSQL with Natural Language
+# whatsinmypg: Query PostgreSQL with Natural Language
 
 This PostgreSQL extension provides a function, `pg_gen_query`, that converts natural language input into an equivalent SQL command.
 
